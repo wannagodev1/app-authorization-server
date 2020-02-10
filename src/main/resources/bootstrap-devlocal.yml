@@ -1,0 +1,54 @@
+server:
+  servlet:
+    context-path: /uaa
+  port: 5000
+
+spring:
+  application.name: app-authorization-server
+  cloud:
+    config:
+      enabled: false
+  data:
+    mongodb:
+      uri: mongodb://app-authorization:wannago@db-mongodb-primary:27017,db-mongodb-secondary:27018/app-authorization
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      enabled: false
+  activemq:
+    broker-url: tcp://localhost:61616
+    packages.trusted: org.springframework.remoting.support,java.lang,java.util,org.wannagoframework
+eureka:
+  client:
+    enabled: false
+
+app:
+  tokenGenerator:
+    verificationTokenExpiry: 1440 # in minutes : 60 * 24 = 1 day
+    passwordTokenExpiry: 1440     # in minutes : 60 * 24 = 1 day
+    rememberMeTokenExpiry: 43200
+    #    5am every day
+    purgeCronExpression: 0 0 5 * * ?
+  keystore:
+    password: mySecretKey
+  auth:
+    tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
+    tokenExpirationMsec: 864000000
+  activeDirectory:
+    enabled: false
+
+javamelody:
+  enabled: false
+
+logging:
+  file: logs/app-authorization-server.log
+
+info.tags.environment: development
+
+vaadin.urlMapping: /ui/*
+
+management:
+  health:
+    ldap:
+      enabled: ${app.activeDirectory.enabled}
