@@ -176,7 +176,7 @@ public class InitialValuesChangeLog {
       if ( existing == null ) {
         SecurityClient newRecord = new SecurityClient();
         newRecord.setClientId(clientAuth.getClientId());
-        newRecord.setClientSecret(clientAuth.getClientSecret());
+        newRecord.setClientSecret(clientPasswordEncoder.encode(clientAuth.getClientSecret()));
         newRecord.setGrantTypes(clientAuth.getGrantTypes());
         newRecord.setScopes(clientAuth.getScope());
         mongoTemplate.save(newRecord);

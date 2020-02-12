@@ -21,6 +21,8 @@ package org.wannagoframework.authorization.converter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.wannagoframework.authorization.domain.RememberMeToken;
+import org.wannagoframework.authorization.domain.PasswordResetToken;
+import org.wannagoframework.authorization.domain.VerificationToken;
 import org.wannagoframework.authorization.domain.SecurityRole;
 import org.wannagoframework.authorization.domain.SecurityUser;
 import org.wannagoframework.commons.utils.OrikaBeanMapper;
@@ -55,5 +57,15 @@ public class SecurityConverter {
         org.wannagoframework.dto.domain.security.RememberMeToken.class);
     orikaBeanMapper
         .addMapper(org.wannagoframework.dto.domain.security.RememberMeToken.class, RememberMeToken.class);
+
+    orikaBeanMapper.addMapper(VerificationToken.class,
+        org.wannagoframework.dto.domain.security.VerificationToken.class);
+    orikaBeanMapper
+        .addMapper(org.wannagoframework.dto.domain.security.VerificationToken.class, VerificationToken.class);
+
+    orikaBeanMapper.addMapper(PasswordResetToken.class,
+        org.wannagoframework.dto.domain.security.PasswordResetToken.class);
+    orikaBeanMapper
+        .addMapper(org.wannagoframework.dto.domain.security.PasswordResetToken.class, PasswordResetToken.class);
   }
 }

@@ -74,8 +74,8 @@ public class SecurityUserServiceEndpoint extends BaseEndpoint {
     return principal;
   }
 
-  @PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
-  @PostMapping(value = "/getSecurityUserByUsername", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  //@PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
+  @PostMapping(value = "/getSecurityUserByUsername")
   public ResponseEntity<ServiceResult> getSecurityUserByUsername(
       @RequestBody GetSecurityUserByUsernameQuery query) {
     String loggerPrefix = getLoggerPrefix("getSecurityUserByUsername");

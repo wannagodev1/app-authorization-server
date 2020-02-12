@@ -76,12 +76,12 @@ public class SmsTemplateServiceImpl implements SmsTemplateService, HasLogger {
   }
 
   @Override
-  public long countBySmsAction(SmsActionEnum smsAction) {
+  public long countBySmsAction(String smsAction) {
     return smsTemplateRepository.countBySmsActionAndIsActiveIsTrue(smsAction);
   }
 
   @Override
-  public Optional<SmsTemplate> findBySmsAction(SmsActionEnum smsAction, String iso3Language) {
+  public Optional<SmsTemplate> findBySmsAction(String smsAction, String iso3Language) {
     Optional<SmsTemplate> result = Optional.empty();
     if (StringUtils.isNotBlank(iso3Language)) {
       result = smsTemplateRepository

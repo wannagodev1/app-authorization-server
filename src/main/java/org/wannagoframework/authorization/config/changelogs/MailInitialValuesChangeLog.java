@@ -35,7 +35,7 @@ public class MailInitialValuesChangeLog {
   @ChangeSet(order = "001", id = "insertVerificationCodeEmail", author = "Wanna Go Dev1")
   public void insertVerificationCodeEmail(MongoTemplate mongoTemplate) {
     MailTemplate notificationMailTemplate = new MailTemplate();
-    notificationMailTemplate.setMailAction(MailActionEnum.EMAIL_VERIFICATION);
+    notificationMailTemplate.setMailAction(MailActionEnum.EMAIL_VERIFICATION.name());
     notificationMailTemplate.setBody("Hi,<br/>"
         + "<br/>"
         + "Thank you for signing up to Wanna Play. Please confirm your email address to activate your account.\n"
@@ -52,7 +52,7 @@ public class MailInitialValuesChangeLog {
   @ChangeSet(order = "002", id = "insertVerificationCodeSms", author = "Wanna Go Dev1")
   public void insertVerificationCodeSms(MongoTemplate mongoTemplate) {
     SmsTemplate notificationSmsTemplate = new SmsTemplate();
-    notificationSmsTemplate.setSmsAction(SmsActionEnum.SMS_VERIFICATION);
+    notificationSmsTemplate.setSmsAction(SmsActionEnum.SMS_VERIFICATION.name());
     notificationSmsTemplate.setBody("Code Enjoy-It ${verificationCode}");
     notificationSmsTemplate.setIso3Language(Locale.ENGLISH.getLanguage());
     notificationSmsTemplate.setName("Verification Code");
@@ -63,7 +63,7 @@ public class MailInitialValuesChangeLog {
   @ChangeSet(order = "003", id = "insertForgetPasswordEmail", author = "Wanna Go Dev1")
   public void insertForgetPasswordEmail(MongoTemplate mongoTemplate) {
     MailTemplate notificationMailTemplate = new MailTemplate();
-    notificationMailTemplate.setMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD);
+    notificationMailTemplate.setMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD.name());
     notificationMailTemplate.setBody("Hi,<br/>"
         + "<br/>"
         + "Reset code: ${resetCode}");
@@ -78,7 +78,7 @@ public class MailInitialValuesChangeLog {
   @ChangeSet(order = "004", id = "insertForgetPasswordSms", author = "Wanna Go Dev1")
   public void insertForgetPasswordSms(MongoTemplate mongoTemplate) {
     SmsTemplate notificationSmsTemplate = new SmsTemplate();
-    notificationSmsTemplate.setSmsAction(SmsActionEnum.SMS_FORGET_PASSWORD);
+    notificationSmsTemplate.setSmsAction(SmsActionEnum.SMS_FORGET_PASSWORD.name());
     notificationSmsTemplate.setBody("Reset Code Enjoy-It ${resetCode}");
     notificationSmsTemplate.setIso3Language(Locale.ENGLISH.getLanguage());
     notificationSmsTemplate.setName("Forget Password Code");

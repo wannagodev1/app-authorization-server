@@ -51,11 +51,11 @@ public interface SmsTemplateRepository extends MongoRepository<SmsTemplate, Stri
 
   long countByIsActive(Boolean isActive);
 
-  long countBySmsActionAndIsActiveIsTrue(SmsActionEnum smsAction);
+  long countBySmsActionAndIsActiveIsTrue(String smsAction);
 
   Optional<SmsTemplate> findBySmsActionAndIso3LanguageAndIsActiveIsTrue(
-      SmsActionEnum smsAction, String iso3Language);
+      String smsAction, String iso3Language);
 
-  Optional<SmsTemplate> findBySmsActionAndIsActiveIsTrue(SmsActionEnum smsAction);
+  Optional<SmsTemplate> findBySmsActionAndIsActiveIsTrue(String smsAction);
 
 }

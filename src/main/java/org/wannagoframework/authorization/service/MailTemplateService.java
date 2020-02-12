@@ -30,9 +30,9 @@ public interface MailTemplateService extends BaseCrudService<MailTemplate> {
 
   long countAnyMatching(String filter);
 
-  long countByMailAction(MailActionEnum mailAction);
+  long countByMailAction(String mailAction);
 
-  Optional<MailTemplate> findByMailAction(MailActionEnum mailAction, String iso3Language);
+  Optional<MailTemplate> findByMailAction(String mailAction, String iso3Language);
 
   MailTemplate add(MailTemplate mailTemplate);
 

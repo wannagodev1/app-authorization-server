@@ -96,7 +96,7 @@ public class SecurityRoleServiceEndpoint extends BaseEndpoint {
     }
   }
 
-  @PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
+  //@PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
   @PostMapping(value = "/findAnyMatching")
   public ResponseEntity<ServiceResult> findAnyMatching(@RequestBody FindAnyMatchingQuery query) {
     String loggerPrefix = getLoggerPrefix("findAnyMatching");
@@ -113,7 +113,7 @@ public class SecurityRoleServiceEndpoint extends BaseEndpoint {
     }
   }
 
-  @PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
+  //@PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
   @PostMapping(value = "/countAnyMatching")
   public ResponseEntity<ServiceResult> countAnyMatching(@RequestBody CountAnyMatchingQuery query) {
     String loggerPrefix = getLoggerPrefix("countAnyMatching");

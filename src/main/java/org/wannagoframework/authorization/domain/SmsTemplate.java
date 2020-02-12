@@ -44,5 +44,5 @@ public class SmsTemplate extends BaseEntity {
   private String iso3Language;
 
   @NotNull
-  private SmsActionEnum smsAction;
+  private String smsAction;
 }

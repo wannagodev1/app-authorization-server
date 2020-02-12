@@ -53,11 +53,11 @@ public interface MailTemplateRepository extends MongoRepository<MailTemplate, St
 
   long countByIsActive(Boolean isActive);
 
-  long countByMailActionAndIsActiveIsTrue(MailActionEnum mailAction);
+  long countByMailActionAndIsActiveIsTrue(String mailAction);
 
-  Optional<MailTemplate> findByMailActionAndIso3LanguageAndIsActiveIsTrue(MailActionEnum mailAction,
+  Optional<MailTemplate> findByMailActionAndIso3LanguageAndIsActiveIsTrue(String mailAction,
       String iso3Language);
 
-  Optional<MailTemplate> findByMailActionAndIsActiveIsTrue(MailActionEnum mailAction);
+  Optional<MailTemplate> findByMailActionAndIsActiveIsTrue(String mailAction);
 
 }

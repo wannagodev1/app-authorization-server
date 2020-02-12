@@ -76,12 +76,12 @@ public class MailTemplateServiceImpl implements MailTemplateService, HasLogger {
   }
 
   @Override
-  public long countByMailAction(MailActionEnum mailAction) {
+  public long countByMailAction(String mailAction) {
     return mailTemplateRepository.countByMailActionAndIsActiveIsTrue(mailAction);
   }
 
   @Override
-  public Optional<MailTemplate> findByMailAction(MailActionEnum mailAction, String iso3Language) {
+  public Optional<MailTemplate> findByMailAction(String mailAction, String iso3Language) {
     Optional<MailTemplate> result = Optional.empty();
     if (StringUtils.isNotBlank(iso3Language)) {
       result = mailTemplateRepository

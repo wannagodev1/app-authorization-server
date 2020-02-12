@@ -30,9 +30,9 @@
     </root>
   </springProfile>
 
-  <springProfile name="devlocal">
-    <logger level="DEBUG" name="org.wannago"/>
-
+  <springProfile name="localdev">
+    <logger level="DEBUG" name="org.wannagoframework"/>
+    <logger level="DEBUG" name="org.springframework.security"/>
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
     </root>

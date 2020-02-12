@@ -244,7 +244,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
     if (isEmailUsername) {
       final Optional<MailTemplate> byMailAction = mailTemplateService.findByMailAction(
-          MailActionEnum.EMAIL_VERIFICATION, iso3Language);
+          MailActionEnum.EMAIL_VERIFICATION.name(), iso3Language);
       byMailAction.ifPresent(mailTemplate -> {
         final Mail mail = new Mail();
 
@@ -266,7 +266,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
       });
     } else {
       final Optional<SmsTemplate> bySmsAction = smsTemplateService
-          .findBySmsAction(SmsActionEnum.SMS_VERIFICATION, iso3Language);
+          .findBySmsAction(SmsActionEnum.SMS_VERIFICATION.name(), iso3Language);
       bySmsAction.ifPresent(smsTemplate -> {
         Sms sms = new Sms();
         sms.setSmsStatus(SmsStatusEnum.NOT_SENT);
@@ -295,7 +295,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
     if (securityUser.getProvider().equals(AuthProviderEnum.LOCAL_EMAIL)) {
       final Optional<MailTemplate> byMailAction = mailTemplateService
-          .findByMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD, securityUser.getDefaultLocale().getISO3Language());
+          .findByMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD.name(), securityUser.getDefaultLocale().getISO3Language());
       byMailAction.ifPresent(mailTemplate -> {
         final Mail mail = new Mail();
 
@@ -317,7 +317,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
       });
     } else if (securityUser.getProvider().equals(AuthProviderEnum.LOCAL_MOBILE_NUMBER)) {
       final Optional<SmsTemplate> bySmsAction = smsTemplateService
-          .findBySmsAction(SmsActionEnum.SMS_FORGET_PASSWORD, securityUser.getDefaultLocale().getISO3Language());
+          .findBySmsAction(SmsActionEnum.SMS_FORGET_PASSWORD.name(), securityUser.getDefaultLocale().getISO3Language());
       bySmsAction.ifPresent(smsTemplate -> {
         Sms sms = new Sms();
         sms.setSmsStatus(SmsStatusEnum.NOT_SENT);
@@ -348,7 +348,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
         final String iso3Language = securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage() : securityUser.getDefaultLocale().getLanguage();
         final Optional<MailTemplate> byMailAction = mailTemplateService.findByMailAction(
-            MailActionEnum.EMAIL_VERIFICATION, iso3Language);
+            MailActionEnum.EMAIL_VERIFICATION.name(), iso3Language);
         byMailAction.ifPresent(mailTemplate -> {
           final Mail mail = new Mail();
 
@@ -373,7 +373,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
         final String iso3Language = securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage()
             : securityUser.getDefaultLocale().getLanguage();
         final Optional<SmsTemplate> bySmsAction = smsTemplateService
-            .findBySmsAction(SmsActionEnum.SMS_VERIFICATION, iso3Language);
+            .findBySmsAction(SmsActionEnum.SMS_VERIFICATION.name(), iso3Language);
         bySmsAction.ifPresent(smsTemplate -> {
           Sms sms = new Sms();
           sms.setSmsStatus(SmsStatusEnum.NOT_SENT);

@@ -31,9 +31,9 @@ public interface SmsTemplateService extends BaseCrudService<SmsTemplate> {
 
   long countAnyMatching(String filter);
 
-  long countBySmsAction(SmsActionEnum smsAction);
+  long countBySmsAction(String smsAction);
 
-  Optional<SmsTemplate> findBySmsAction(SmsActionEnum smsAction, String iso3Language);
+  Optional<SmsTemplate> findBySmsAction(String smsAction, String iso3Language);
 
   SmsTemplate add(SmsTemplate smsTemplate);
 
