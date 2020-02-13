@@ -47,6 +47,7 @@
     <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
     <sonar-maven-plugin.version>3.6.1.1688</sonar-maven-plugin.version>
     <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+    <dockerfile-maven-version>1.4.13</dockerfile-maven-version>
 
     <spring-cloud.version>Hoxton.SR1</spring-cloud.version>
     <spring-boot-admin.version>2.2.1</spring-boot-admin.version>
