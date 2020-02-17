@@ -18,11 +18,12 @@
       <param name="maximumMessageSize" value="8192"/>
       <param name="includeFullMdc" value="true"/>
 
-      <param name="additionalFields" value="APP =app-authorization-server,ENV=devgcp"/>
+      <param name="additionalFields" value="APP=app-authorization-server,ENV=devgcp"/>
       <param name="additionalFieldTypes" value="APP=String,ENV=String"/>
     </appender>
 
-    <logger level="DEBUG" name="org.wannago"/>
+    <logger level="DEBUG" name="org.wannagoframework"/>
+    <logger level="INFO" name="org.springframework.security"/>
 
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
@@ -30,13 +31,12 @@
     </root>
   </springProfile>
 
-  <springProfile name="localdev">
+  <springProfile name="devlocal">
     <logger level="DEBUG" name="org.wannagoframework"/>
-    <logger level="DEBUG" name="org.springframework.security"/>
+    <logger level="INFO" name="org.springframework.security"/>
+
     <root level="INFO">
       <appender-ref ref="CONSOLE"/>
     </root>
   </springProfile>
-
-  <logger level="INFO" name="org.springframework"/>
 </configuration>
