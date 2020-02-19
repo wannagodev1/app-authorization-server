@@ -416,9 +416,9 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     } else {
       UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username,
           password);
-      if (appProperties.getActiveDirectory().getEnabled()) {
+      if (appProperties.getActiveDirectory().getEnabled() && StringUtils.isNotBlank(_securityUser.get().getEmail())) {
         try {
-          authentication = activeDirectoryLdapAuthenticationProvider.authenticate(token);
+          authentication = activeDirectoryLdapAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(_securityUser.get().getEmail(), password));
         } catch (BadCredentialsException e) {
         }
       }
