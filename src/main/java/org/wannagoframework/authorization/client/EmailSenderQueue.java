@@ -16,13 +16,25 @@
  */
 
 
-package org.wannagoframework.authorization.domain;
+package org.wannagoframework.authorization.client;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Component;
+import org.wannagoframework.dto.domain.notification.Mail;
 
 /**
  * @author WannaGo Dev1.
  * @version 1.0
- * @since 2019-02-22
+ * @since 2019-07-02
  */
-public enum SmsActionEnum {
-  SMS_VERIFICATION, SMS_FORGET_PASSWORD
+@Component
+public class EmailSenderQueue {
+
+  @Autowired
+  JmsTemplate jmsTemplate;
+
+  public void sendMessage(final Mail mailMessage) {
+    jmsTemplate.send("mailbox", session -> session.createObjectMessage(mailMessage));
+  }
 }

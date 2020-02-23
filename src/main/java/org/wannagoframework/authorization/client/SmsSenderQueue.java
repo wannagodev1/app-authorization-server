@@ -16,42 +16,25 @@
  */
 
 
-package org.wannagoframework.authorization.domain;
+package org.wannagoframework.authorization.client;
 
-import javax.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Component;
+import org.wannagoframework.dto.domain.notification.Sms;
 
 /**
  * @author WannaGo Dev1.
  * @version 1.0
- * @since 2019-02-22
+ * @since 2019-07-02
  */
-@Document
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class MailTemplate extends BaseEntity {
+@Component
+public class SmsSenderQueue {
 
-  @NotNull
-  private String name;
+  @Autowired
+  private JmsTemplate jmsTemplate;
 
-  @NotNull
-  private String subject;
-
-  @NotNull
-  private String body;
-
-  private String bodyHtml;
-
-  private String copyTo;
-
-  private String from;
-
-  private String iso3Language;
-
-  @NotNull
-  private String mailAction;
+  public void sendMessage(final Sms smsMessage) {
+    jmsTemplate.send("sms", session -> session.createObjectMessage(smsMessage));
+  }
 }

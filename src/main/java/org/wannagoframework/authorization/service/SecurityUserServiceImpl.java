@@ -19,10 +19,9 @@
 package org.wannagoframework.authorization.service;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -40,17 +39,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.wannagoframework.authorization.client.AuthorizationEmailSenderQueue;
+import org.wannagoframework.authorization.client.EmailSenderQueue;
+import org.wannagoframework.authorization.client.SmsSenderQueue;
 import org.wannagoframework.authorization.config.AppProperties;
 import org.wannagoframework.authorization.domain.AuthProviderEnum;
-import org.wannagoframework.authorization.domain.MailActionEnum;
-import org.wannagoframework.authorization.domain.MailTemplate;
 import org.wannagoframework.authorization.domain.PasswordResetToken;
 import org.wannagoframework.authorization.domain.RememberMeToken;
 import org.wannagoframework.authorization.domain.SecurityUser;
 import org.wannagoframework.authorization.domain.SecurityUserTypeEnum;
-import org.wannagoframework.authorization.domain.SmsActionEnum;
-import org.wannagoframework.authorization.domain.SmsTemplate;
 import org.wannagoframework.authorization.domain.VerificationToken;
 import org.wannagoframework.authorization.exception.PasswordResetNotSupportedException;
 import org.wannagoframework.authorization.exception.ResourceNotFoundException;
@@ -60,15 +56,15 @@ import org.wannagoframework.authorization.repository.SecurityRoleRepository;
 import org.wannagoframework.authorization.repository.SecurityUserRepository;
 import org.wannagoframework.authorization.security.TokenProvider;
 import org.wannagoframework.authorization.utils.ActiveDirectroyUserDetailsContextMapper;
-import org.wannagoframework.commons.utils.FreeMakerProcessor;
 import org.wannagoframework.commons.SecurityConst;
 import org.wannagoframework.commons.security.SecurityUtils;
+import org.wannagoframework.commons.utils.FreeMakerProcessor;
 import org.wannagoframework.commons.utils.HasLogger;
 import org.wannagoframework.commons.utils.OrikaBeanMapper;
 import org.wannagoframework.dto.domain.notification.Mail;
-import org.wannagoframework.dto.domain.notification.MailStatusEnum;
+import org.wannagoframework.dto.domain.notification.MailActionEnum;
 import org.wannagoframework.dto.domain.notification.Sms;
-import org.wannagoframework.dto.domain.notification.SmsStatusEnum;
+import org.wannagoframework.dto.domain.notification.SmsActionEnum;
 import org.wannagoframework.dto.serviceResponse.authentification.AuthResponse;
 import org.wannagoframework.dto.serviceResponse.authentification.AuthStatusEnum;
 import org.wannagoframework.dto.utils.AppContextThread;
@@ -88,11 +84,10 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
   private final SecurityUserRepository securityUserRepository;
   private final SecurityRoleRepository securityRoleRepository;
-  private final MailTemplateService mailTemplateService;
-  private final SmsTemplateService smsTemplateService;
   private final AuthenticationManager authenticationManager;
   private final TokenProvider tokenProvider;
-  private final AuthorizationEmailSenderQueue authorizationEmailSenderQueue;
+  private final EmailSenderQueue emailSenderQueue;
+  private final SmsSenderQueue smsSenderQueue;
   private final PasswordEncoder passwordEncoder;
   private final OrikaBeanMapper mapperFacade;
   private final AppProperties appProperties;
@@ -103,21 +98,19 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
   public SecurityUserServiceImpl(
       SecurityUserRepository securityUserRepository,
       SecurityRoleRepository securityRoleRepository,
-      MailTemplateService mailTemplateService,
-      SmsTemplateService smsTemplateService,
       AuthenticationManager authenticationManager,
       TokenProvider tokenProvider,
-      AuthorizationEmailSenderQueue authorizationEmailSenderQueue,
+      EmailSenderQueue emailSenderQueue,
+      SmsSenderQueue smsSenderQueue,
       PasswordEncoder passwordEncoder, OrikaBeanMapper mapperFacade,
       AppProperties appProperties,
       FreeMakerProcessor freeMakerProcessor) {
     this.securityUserRepository = securityUserRepository;
     this.securityRoleRepository = securityRoleRepository;
-    this.mailTemplateService = mailTemplateService;
-    this.smsTemplateService = smsTemplateService;
     this.authenticationManager = authenticationManager;
     this.tokenProvider = tokenProvider;
-    this.authorizationEmailSenderQueue = authorizationEmailSenderQueue;
+    this.emailSenderQueue = emailSenderQueue;
+    this.smsSenderQueue = smsSenderQueue;
     this.passwordEncoder = passwordEncoder;
     this.mapperFacade = mapperFacade;
     this.appProperties = appProperties;
@@ -238,50 +231,25 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     user.getRoles().add(securityRoleRepository.getByNameIgnoreCase("EXTERNAL"));
     user.setDefaultLocale(new Locale(iso3Language));
-    SecurityUser result = securityUserRepository.save(user);
+    SecurityUser securityUser = securityUserRepository.save(user);
 
-    String token = createVerificationTokenForUser(result);
-
+    String token = createVerificationTokenForUser(securityUser);
     if (isEmailUsername) {
-      final Optional<MailTemplate> byMailAction = mailTemplateService.findByMailAction(
-          MailActionEnum.EMAIL_VERIFICATION.name(), iso3Language);
-      byMailAction.ifPresent(mailTemplate -> {
-        final Mail mail = new Mail();
-
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put("verificationCode", token);
-        mail.setMailStatus(MailStatusEnum.NOT_SENT);
-        // initialize saved mail data
-        mail.setFrom(mailTemplate.getFrom());
-        mail.setTo(email);
-        if (StringUtils.isNotBlank(mailTemplate.getCopyTo())) {
-          mail.setCopyTo(mailTemplate.getCopyTo());
-        }
-
-        String html = freeMakerProcessor.process(mailTemplate.getBody(), attributes);
-        mail.setBody(html);
-        String subject = freeMakerProcessor.process(mailTemplate.getSubject(), attributes);
-        mail.setSubject(subject);
-        authorizationEmailSenderQueue.sendMail(mail);
-      });
+      final Mail mail = new Mail();
+      mail.setMailAction(MailActionEnum.EMAIL_VERIFICATION.name());
+      mail.setIso3Language(iso3Language);
+      mail.setAttributes(Collections.singletonMap("verificationCode", token));
+      mail.setTo(email);
+      emailSenderQueue.sendMessage(mail);
     } else {
-      final Optional<SmsTemplate> bySmsAction = smsTemplateService
-          .findBySmsAction(SmsActionEnum.SMS_VERIFICATION.name(), iso3Language);
-      bySmsAction.ifPresent(smsTemplate -> {
-        Sms sms = new Sms();
-        sms.setSmsStatus(SmsStatusEnum.NOT_SENT);
-        Map<String, String> attributes = new HashMap<>();
-        attributes.put("verificationCode", token);
-
-        String html = freeMakerProcessor.process(smsTemplate.getBody(), attributes);
-
-        // initialize saved sms data
-        sms.setPhoneNumber(mobileNumber);
-        sms.setBody(html);
-        authorizationEmailSenderQueue.sendSms(sms);
-      });
+      Sms sms = new Sms();
+      sms.setSmsAction(SmsActionEnum.SMS_VERIFICATION.name());
+      sms.setIso3Language(iso3Language);
+      sms.setAttributes(Collections.singletonMap("verificationCode", token));
+      sms.setPhoneNumber(mobileNumber);
+      smsSenderQueue.sendMessage(sms);
     }
-    return result;
+    return securityUser;
   }
 
   @Override
@@ -292,45 +260,25 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     if (securityUser == null) {
       throw new UsernameNotFoundException(username);
     }
-
+    final String iso3Language =
+        securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage()
+            : securityUser.getDefaultLocale().getLanguage();
     if (securityUser.getProvider().equals(AuthProviderEnum.LOCAL_EMAIL)) {
-      final Optional<MailTemplate> byMailAction = mailTemplateService
-          .findByMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD.name(), securityUser.getDefaultLocale().getISO3Language());
-      byMailAction.ifPresent(mailTemplate -> {
-        final Mail mail = new Mail();
-
-        final Map<String, String> attributes = new HashMap<>();
-        attributes.put("resetCode", createPasswordResetTokenForUser(securityUser));
-        mail.setMailStatus(MailStatusEnum.NOT_SENT);
-        // initialize saved mail data
-        mail.setFrom(mailTemplate.getFrom());
-        mail.setTo(securityUser.getEmail());
-        if (StringUtils.isNotBlank(mailTemplate.getCopyTo())) {
-          mail.setCopyTo(mailTemplate.getCopyTo());
-        }
-
-        String html = freeMakerProcessor.process(mailTemplate.getBody(), attributes);
-        mail.setBody(html);
-        String subject = freeMakerProcessor.process(mailTemplate.getSubject(), attributes);
-        mail.setSubject(subject);
-        authorizationEmailSenderQueue.sendMail(mail);
-      });
+      final Mail mail = new Mail();
+      mail.setMailAction(MailActionEnum.EMAIL_FORGET_PASSWORD.name());
+      mail.setIso3Language(iso3Language);
+      mail.setAttributes(
+          Collections.singletonMap("resetCode", createPasswordResetTokenForUser(securityUser)));
+      mail.setTo(securityUser.getEmail());
+      emailSenderQueue.sendMessage(mail);
     } else if (securityUser.getProvider().equals(AuthProviderEnum.LOCAL_MOBILE_NUMBER)) {
-      final Optional<SmsTemplate> bySmsAction = smsTemplateService
-          .findBySmsAction(SmsActionEnum.SMS_FORGET_PASSWORD.name(), securityUser.getDefaultLocale().getISO3Language());
-      bySmsAction.ifPresent(smsTemplate -> {
-        Sms sms = new Sms();
-        sms.setSmsStatus(SmsStatusEnum.NOT_SENT);
-        Map<String, String> attributes = new HashMap<>();
-        attributes.put("resetCode", createPasswordResetTokenForUser(securityUser));
-
-        String html = freeMakerProcessor.process(smsTemplate.getBody(), attributes);
-
-        // initialize saved sms data
-        sms.setPhoneNumber(securityUser.getMobileNumber());
-        sms.setBody(html);
-        authorizationEmailSenderQueue.sendSms(sms);
-      });
+      Sms sms = new Sms();
+      sms.setSmsAction(SmsActionEnum.SMS_FORGET_PASSWORD.name());
+      sms.setIso3Language(iso3Language);
+      sms.setAttributes(
+          Collections.singletonMap("resetCode", createPasswordResetTokenForUser(securityUser)));
+      sms.setPhoneNumber(securityUser.getMobileNumber());
+      smsSenderQueue.sendMessage(sms);
     } else {
       throw new PasswordResetNotSupportedException(securityUser.getProvider().toString());
     }
@@ -344,50 +292,23 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
       SecurityUser securityUser = _securityUser.get();
       String token = createVerificationTokenForUser(_securityUser.get());
 
+      final String iso3Language =
+          securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage()
+              : securityUser.getDefaultLocale().getLanguage();
       if (securityUser.getProvider().equals(AuthProviderEnum.LOCAL_EMAIL)) {
-
-        final String iso3Language = securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage() : securityUser.getDefaultLocale().getLanguage();
-        final Optional<MailTemplate> byMailAction = mailTemplateService.findByMailAction(
-            MailActionEnum.EMAIL_VERIFICATION.name(), iso3Language);
-        byMailAction.ifPresent(mailTemplate -> {
-          final Mail mail = new Mail();
-
-          final Map<String, String> attributes = new HashMap<>();
-          attributes.put("verificationCode", token);
-          mail.setMailStatus(MailStatusEnum.NOT_SENT);
-          // initialize saved mail data
-          mail.setFrom(mailTemplate.getFrom());
-          mail.setTo(securityUser.getEmail());
-          if (StringUtils.isNotBlank(mailTemplate.getCopyTo())) {
-            mail.setCopyTo(mailTemplate.getCopyTo());
-          }
-
-          String html = freeMakerProcessor.process(mailTemplate.getBody(), attributes);
-          mail.setBody(html);
-          String subject = freeMakerProcessor.process(mailTemplate.getSubject(), attributes);
-          mail.setSubject(subject);
-          authorizationEmailSenderQueue.sendMail(mail);
-        });
-
+        final Mail mail = new Mail();
+        mail.setMailAction(MailActionEnum.EMAIL_VERIFICATION.name());
+        mail.setIso3Language(iso3Language);
+        mail.setAttributes(Collections.singletonMap("verificationCode", token));
+        mail.setTo(securityUser.getEmail());
+        emailSenderQueue.sendMessage(mail);
       } else {
-        final String iso3Language = securityUser.getDefaultLocale() == null ? Locale.ENGLISH.getLanguage()
-            : securityUser.getDefaultLocale().getLanguage();
-        final Optional<SmsTemplate> bySmsAction = smsTemplateService
-            .findBySmsAction(SmsActionEnum.SMS_VERIFICATION.name(), iso3Language);
-        bySmsAction.ifPresent(smsTemplate -> {
-          Sms sms = new Sms();
-          sms.setSmsStatus(SmsStatusEnum.NOT_SENT);
-          Map<String, String> attributes = new HashMap<>();
-          attributes.put("verificationCode", token);
-
-          String body = freeMakerProcessor.process(smsTemplate.getBody(), attributes);
-
-          // initialize saved sms data
-          sms.setPhoneNumber(securityUser.getMobileNumber());
-          sms.setBody(body);
-          authorizationEmailSenderQueue.sendSms(sms);
-        });
-
+        Sms sms = new Sms();
+        sms.setSmsAction(SmsActionEnum.SMS_VERIFICATION.name());
+        sms.setIso3Language(iso3Language);
+        sms.setAttributes(Collections.singletonMap("verificationCode", token));
+        sms.setPhoneNumber(securityUser.getMobileNumber());
+        smsSenderQueue.sendMessage(sms);
       }
     }
   }
@@ -405,37 +326,39 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
   @Override
   @Transactional
   public AuthResponse authenticateUser(String username, String password) {
-    String loggerPrefix =  getLoggerPrefix("authenticateUser");
+    String loggerPrefix = getLoggerPrefix("authenticateUser");
     Authentication authentication = null;
     AuthResponse authResponse = new AuthResponse();
 
     Optional<SecurityUser> _securityUser = securityUserRepository.findByUsername(username);
-    if  ( ! _securityUser.isPresent() ) {
-      logger().warn(loggerPrefix+"Username not found");
+    if (!_securityUser.isPresent()) {
+      logger().warn(loggerPrefix + "Username not found");
       authResponse.setStatus(AuthStatusEnum.BAD_CREDENTIALS);
     } else {
       UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username,
           password);
-      if (appProperties.getActiveDirectory().getEnabled() && StringUtils.isNotBlank(_securityUser.get().getEmail())) {
+      if (appProperties.getActiveDirectory().getEnabled() && StringUtils
+          .isNotBlank(_securityUser.get().getEmail())) {
         try {
-          authentication = activeDirectoryLdapAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(_securityUser.get().getEmail(), password));
+          authentication = activeDirectoryLdapAuthenticationProvider.authenticate(
+              new UsernamePasswordAuthenticationToken(_securityUser.get().getEmail(), password));
         } catch (BadCredentialsException e) {
         }
       }
       if (authentication == null || !authentication.isAuthenticated()) {
         try {
           authentication = authenticationManager.authenticate(token);
-        } catch (BadCredentialsException  e) {
+        } catch (BadCredentialsException e) {
           authResponse.setStatus(AuthStatusEnum.BAD_CREDENTIALS);
           _securityUser.ifPresent(securityUser -> {
-          securityUser.setFailedLoginAttempts(securityUser.getFailedLoginAttempts() + 1);
-          if (securityUser.getFailedLoginAttempts() > 2) {
-            securityUser.setIsAccountLocked(true);
-            authResponse.setStatus(AuthStatusEnum.LOCKED);
-          }
-          securityUserRepository.save(securityUser);
-        });
-        } catch ( LockedException e ) {
+            securityUser.setFailedLoginAttempts(securityUser.getFailedLoginAttempts() + 1);
+            if (securityUser.getFailedLoginAttempts() > 2) {
+              securityUser.setIsAccountLocked(true);
+              authResponse.setStatus(AuthStatusEnum.LOCKED);
+            }
+            securityUserRepository.save(securityUser);
+          });
+        } catch (LockedException e) {
           authResponse.setStatus(AuthStatusEnum.LOCKED);
         }
       } else {
@@ -556,7 +479,8 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
   @Override
   @Transactional
-  public String validateVerificationToken(String lastName, String firstName, String email, String nickName, String securityUserId,
+  public String validateVerificationToken(String lastName, String firstName, String email,
+      String nickName, String securityUserId,
       String verificationToken) {
     Optional<SecurityUser> _securityUser = securityUserRepository.findById(securityUserId);
 
