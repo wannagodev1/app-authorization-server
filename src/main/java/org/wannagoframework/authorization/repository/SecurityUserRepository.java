@@ -36,17 +36,21 @@ public interface SecurityUserRepository extends MongoRepository<SecurityUser, St
 
   Optional<SecurityUser> findByUsername(String username);
 
+  @Query("{'username':{'$regex':'?0','$options':'i'}, 'isActive': ?1}")
   Page<SecurityUser> findByUsernameLikeAndIsActive(String filter, Boolean showInactive,
       Pageable pageable);
 
+  @Query("{'username':{'$regex':'?0','$options':'i'}}")
   Page<SecurityUser> findByUsernameLike(String filter, Pageable pageable);
 
   Page<SecurityUser> findByIsActive(Boolean showInactive, Pageable pageable);
 
   SecurityUser getByUsernameIgnoreCase(String username);
 
+  @Query(value = "{'username':{'$regex':'?0','$options':'i'}, 'isActive': ?1}", count = true)
   long countByUsernameLikeAndIsActive(String filter, Boolean showInactive);
 
+  @Query(value = "{'username':{'$regex':'?0','$options':'i'}}", count = true)
   long countByUsername(String filter);
 
   long countByIsActive(Boolean showInactive);
