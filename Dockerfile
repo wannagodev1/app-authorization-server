@@ -8,7 +8,7 @@ RUN yum update -y && \
 ENV JAVA_OPTS=""
 ENV APP_OPTS=""
 
-ADD target /app-authorization-server.jar /app/
+ADD target/app-authorization-server.jar /app/
 
 ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app /app-authorization-server.jar $APP_OPTS"]
 
