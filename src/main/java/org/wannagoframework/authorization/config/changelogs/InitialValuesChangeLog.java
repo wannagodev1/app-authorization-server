@@ -22,12 +22,8 @@ import com.github.mongobee.changeset.ChangeLog;
 import com.github.mongobee.changeset.ChangeSet;
 import java.util.Collections;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.CriteriaDefinition;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -173,7 +169,7 @@ public class InitialValuesChangeLog {
     List<ClientAuth> clientAuths = appProperties.getAuth().getClients();
     clientAuths.forEach( clientAuth -> {
       SecurityClient existing = mongoTemplate.findOne( Query.query(Criteria.where("clientId").is(clientAuth.getClientId())), SecurityClient.class);
-      if ( existing == null ) {
+      if (existing == null) {
         SecurityClient newRecord = new SecurityClient();
         newRecord.setClientId(clientAuth.getClientId());
         newRecord.setClientSecret(clientPasswordEncoder.encode(clientAuth.getClientSecret()));
@@ -182,5 +178,16 @@ public class InitialValuesChangeLog {
         mongoTemplate.save(newRecord);
       }
     });
+  }
+
+  @ChangeSet(order = "011", id = "insertNotificationServiceClientDetails", author = "Wanna Go Dev1")
+  public void insertNotificationServiceClientDetails(MongoTemplate mongoTemplate) {
+    SecurityClient backofficeServiceClientDetails = new SecurityClient();
+    backofficeServiceClientDetails.setClientId("notification-server");
+    backofficeServiceClientDetails.setClientSecret(clientPasswordEncoder.encode("1234"));
+    backofficeServiceClientDetails.setScopes("notification");
+    backofficeServiceClientDetails.setGrantTypes("refresh_token,client_credentials");
+
+    mongoTemplate.save(backofficeServiceClientDetails);
   }
 }
