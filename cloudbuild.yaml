@@ -56,9 +56,7 @@ steps:
   - id: 'Update the image'
     name: 'gcr.io/cloud-builders/gcloud'
     args: ['beta', 'compute', '--project', '$PROJECT_ID', 'ssh', '--zone', "$_CLOUDSDK_COMPUTE_ZONE", "clavaud@$_REMOTE_SERVER", "--command", "docker service update --force --with-registry-auth --image eu.gcr.io/$PROJECT_ID/${_ARTIFACT_ID}:latest wannaenjoy_${_ARTIFACT_ID}"]
-  - id: 'Update the backup image'
-    name: 'gcr.io/cloud-builders/gcloud'
-    args: ['beta', 'compute', '--project', '$PROJECT_ID', 'ssh', '--zone', "$_CLOUDSDK_COMPUTE_ZONE", "clavaud@$_REMOTE_SERVER", "--command", "docker service update --force --with-registry-auth --image eu.gcr.io/$PROJECT_ID/${_ARTIFACT_ID}:latest wannaenjoy_${_ARTIFACT_ID}-backup"]
+
 images:
   - 'eu.gcr.io/$PROJECT_ID/${_ARTIFACT_ID}:latest'
 
