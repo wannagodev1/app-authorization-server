@@ -79,6 +79,7 @@ public class ActuatorSecurity {
   }
 
   @Configuration
+  @Order(2)
   public static class ConfigWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
     @Override
