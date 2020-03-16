@@ -41,6 +41,8 @@ public class JavamelodyConfig implements HasLogger {
     String contextPath = env.getProperty("server.servlet.context-path");
     if (StringUtils.isBlank(contextPath)) {
       contextPath = "/";
+    } else {
+      contextPath += "/";
     }
     String hostAddress = "localhost";
     try {
