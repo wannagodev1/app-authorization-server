@@ -18,14 +18,16 @@
 
 package org.wannagoframework.authorization.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -37,7 +39,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @EnableWebSecurity
-@Profile("devgcp")
 public class ActuatorSecurity {
 
   private Environment env;
@@ -51,10 +52,8 @@ public class ActuatorSecurity {
     return new BCryptPasswordEncoder();
   }
 
-
   @Bean
-  public UserDetailsService userDetailsService() throws Exception {
-    // ensure the passwords are encoded properly
+  public UserDetailsService actuatorUserDetailsService() throws Exception {
     UserBuilder users = User.builder().passwordEncoder(s -> passwordEncoder().encode(s));
     InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
     manager.createUser(users.username(env.getProperty("spring.security.user.name")).password(
@@ -68,6 +67,16 @@ public class ActuatorSecurity {
   public static class MonitoringWebSecurityConfigurationAdapter extends
       WebSecurityConfigurerAdapter {
 
+    @Autowired
+    @Qualifier("actuatorUserDetailsService")
+    private UserDetailsService v3UserDetailsService;
+
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+      auth
+          .userDetailsService(v3UserDetailsService);
+    }
+
     protected void configure(HttpSecurity http) throws Exception {
       http.antMatcher("/actuator/**")
           .authorizeRequests(authorize ->
@@ -75,20 +84,6 @@ public class ActuatorSecurity {
                   .requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("MONITORING")
                   .anyRequest().permitAll()
           ).httpBasic(Customizer.withDefaults());
-    }
-  }
-
-  @Configuration
-  @Order(2)
-  public static class ConfigWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-      http
-          .authorizeRequests(authorize -> authorize
-              .anyRequest().authenticated()
-          )
-          .httpBasic(Customizer.withDefaults());
     }
   }
 }

@@ -19,6 +19,12 @@ spring:
   activemq:
     broker-url: tcp://localhost:61616
     packages.trusted: org.springframework.remoting.support,java.lang,java.util,org.wannagoframework
+  security:
+    user:
+      name: user
+      password: none
+      roles: MONITORING
+
 eureka:
   client:
     enabled: false
@@ -39,16 +45,31 @@ app:
     enabled: false
 
 javamelody:
-  enabled: false
-
-logging:
-  file: logs/app-authorization-server.log
-
-info.tags.environment: development
-
-vaadin.urlMapping: /ui/*
+  enabled: true
+  management-endpoint-monitoring-enabled: true
 
 management:
+  server:
+    port: 5100
+    ssl.enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  info:
+    git:
+      mode: full
   health:
     ldap:
       enabled: ${app.activeDirectory.enabled}
+
+logging:
+  file:
+    name: logs/app-authorization-server.log
+
+info.tags.environment: development
