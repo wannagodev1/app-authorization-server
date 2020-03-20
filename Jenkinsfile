@@ -12,7 +12,7 @@ pipeline {
   }
 
   parameters {
-    string(name: 'dockerIlemRegistry', description: 'ilem Registry server name')
+    string(name: 'dockerRegistry', description: 'Push Registry server name')
   }
 
   environment {
@@ -25,7 +25,7 @@ pipeline {
     stage('Build') {
       agent {
         docker {
-          image 'maven:3.5.0-jdk-8'
+          image 'maven:3.6-jdk-11'
           args '-v /root/.m2:/root/.m2'
         }
       }
@@ -45,9 +45,9 @@ pipeline {
         branch 'master'  //only run these steps on the master branch
       }
       steps {
-      withCredentials([usernamePassword(credentialsId: 'ilem-nexus-deployment-credentials', passwordVariable: 'dockerIlemPassword', usernameVariable: 'dockerIlemUser')]) {
-        sh "docker build -t ${params.dockerIlemRegistry}/${IMAGE}:${VERSION} ."
-        sh "docker login -u ${env.dockerIlemUser} -p ${env.dockerIlemPassword} ${params.dockerIlemRegistry}"
+      withCredentials([usernamePassword(credentialsId: 'registry-deployment-credentials', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUsername')]) {
+        sh "docker build -t ${params.dockerRegistry}/${IMAGE}:${VERSION} ."
+        sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${params.dockerRegistry}"
         sh "docker push ${params.dockerRegistry}/${IMAGE}:${VERSION}"
         }
       }
