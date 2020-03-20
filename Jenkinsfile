@@ -25,7 +25,7 @@ pipeline {
     stage('Build') {
       agent {
         docker {
-          image 'maven:3.6-jdk-11'
+          image 'maven:3.6-jdk-13'
           args '-v /root/.m2:/root/.m2'
         }
       }
