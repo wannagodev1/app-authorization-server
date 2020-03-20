@@ -20,6 +20,8 @@ pipeline {
             }
             steps {
                 sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip install'
+                sh 'pwd'
+                sh 'ls -al'
             }
         }
 
@@ -29,6 +31,8 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'registry-deployment-credentials', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUsername')]) {
+                    sh 'pwd'
+                    sh 'ls -al'
                     sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
                     sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${env.dockerRegistry}"
                     sh "docker push ${env.dockerRegistry}/${IMAGE}:${VERSION}"
