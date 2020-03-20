@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     options {
         timestamps()
@@ -24,6 +24,7 @@ pipeline {
         }
 
         stage('Build and Publish Image') {
+            agent any
             when {
                 branch 'master'  //only run these steps on the master branch
             }
