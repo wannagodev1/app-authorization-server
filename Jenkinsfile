@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     options {
         timestamps()
@@ -19,12 +19,11 @@ pipeline {
                 }
             }
             steps {
-                sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip package'
+                sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip install'
             }
         }
 
         stage('Build and Publish Image') {
-            agent any
             when {
                 branch 'master'  //only run these steps on the master branch
             }
