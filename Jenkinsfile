@@ -11,10 +11,6 @@ pipeline {
     timestamps()
   }
 
-  parameters {
-    string(name: 'dockerRegistry', description: 'Push Registry server name')
-  }
-
   environment {
     //Use Pipeline Utility Steps plugin to read information from pom.xml into env variables
     IMAGE = readMavenPom().getArtifactId()
@@ -46,9 +42,9 @@ pipeline {
       }
       steps {
       withCredentials([usernamePassword(credentialsId: 'registry-deployment-credentials', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUsername')]) {
-        sh "docker build -t ${params.dockerRegistry}/${IMAGE}:${VERSION} ."
-        sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${params.dockerRegistry}"
-        sh "docker push ${params.dockerRegistry}/${IMAGE}:${VERSION}"
+        sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
+        sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${env.dockerRegistry}"
+        sh "docker push ${env.dockerRegistry}/${IMAGE}:${VERSION}"
         }
       }
     }
