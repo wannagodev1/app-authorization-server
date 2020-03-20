@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-    }
-
     environment {
         IMAGE = readMavenPom().getArtifactId()
         VERSION = readMavenPom().getVersion()
@@ -20,9 +16,7 @@ pipeline {
             }
             steps {
                 sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip install'
-                sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
-                sh 'pwd'
-                sh 'ls -al'
+                stash includes: '**/target/*.jar', name: 'app'
             }
         }
         stage('Docker Push') {
@@ -31,9 +25,9 @@ pipeline {
                 branch 'master'  //only run these steps on the master branch
             }
             steps {
+                unstash 'app'
                 withCredentials([usernamePassword(credentialsId: 'registry-deployment-credentials', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUsername')]) {
-                    sh 'pwd'
-                    sh 'ls -al'
+                    sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
                     sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${env.dockerRegistry}"
                     sh "docker push ${env.dockerRegistry}/${IMAGE}:${VERSION}"
                 }
