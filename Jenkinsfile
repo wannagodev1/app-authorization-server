@@ -4,7 +4,7 @@ pipeline {
    * Run everything on an existing agent configured with a label 'docker'.
    * This agent will need docker, git and a jdk installed at a minimum.
    */
-  agent any
+  agent none
 
   // using the Timestamper plugin we can add timestamps to the console log
   options {
@@ -37,6 +37,7 @@ pipeline {
     }
 
     stage('Build and Publish Image') {
+      agent any
       when {
         branch 'master'  //only run these steps on the master branch
       }
