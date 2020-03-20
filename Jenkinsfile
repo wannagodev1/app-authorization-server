@@ -19,7 +19,7 @@ pipeline {
         }
       }
       steps {
-          sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip package'
+        sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip package'
       }
     }
 
@@ -33,6 +33,7 @@ pipeline {
           sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
           sh "docker login -u ${env.dockerUsername} -p ${env.dockerPassword} ${env.dockerRegistry}"
           sh "docker push ${env.dockerRegistry}/${IMAGE}:${VERSION}"
+          }
         }
       }
     }
