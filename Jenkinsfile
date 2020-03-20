@@ -12,8 +12,9 @@ pipeline {
   }
 
   parameters {
-    string(name: 'dockerRegistry', description: 'Docker registry')
+    string(name: 'dockerIlemRegistry', description: 'ilem Registry server name')
   }
+
   environment {
     //Use Pipeline Utility Steps plugin to read information from pom.xml into env variables
     IMAGE = readMavenPom().getArtifactId()
@@ -24,20 +25,12 @@ pipeline {
     stage('Build') {
       agent {
         docker {
-          /*
-           * Reuse the workspace on the agent defined at top-level of Pipeline but run inside a container.
-           * In this case we are running a container with maven so we don't have to install specific versions
-           * of maven directly on the agent
-           */
-          reuseNode true
           image 'maven:3.5.0-jdk-8'
+          args '-v /root/.m2:/root/.m2'
         }
       }
       steps {
-        // using the Pipeline Maven plugin we can set maven configuration settings, publish test results, and annotate the Jenkins console
-        withMaven(options: [findbugsPublisher(), junitPublisher(ignoreAttachments: false)]) {
           sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip package'
-        }
       }
       post {
         success {
@@ -52,14 +45,11 @@ pipeline {
         branch 'master'  //only run these steps on the master branch
       }
       steps {
-        /*
-         * Multiline strings can be used for larger scripts. It is also possible to put scripts in your shared library
-         * and load them with 'libaryResource'
-         */
-        sh """
-          docker build -t ${params.dockerRegistry}/${IMAGE} .
-          docker push ${params.dockerRegistry}/${IMAGE}:${VERSION}
-        """
+      withCredentials([usernamePassword(credentialsId: 'ilem-nexus-deployment-credentials', passwordVariable: 'dockerIlemPassword', usernameVariable: 'dockerIlemUser')]) {
+        sh "docker build -t ${params.dockerIlemRegistry}/${IMAGE}:${VERSION} ."
+        sh "docker login -u ${env.dockerIlemUser} -p ${env.dockerIlemPassword} ${params.dockerIlemRegistry}"
+        sh "docker push ${params.dockerRegistry}/${IMAGE}:${VERSION}"
+        }
       }
     }
   }
