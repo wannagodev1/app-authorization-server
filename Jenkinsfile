@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.6-jdk-13'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
 
     options {
         timestamps()
@@ -12,12 +17,7 @@ pipeline {
 
     stages {
         stage('Build') {
-            agent {
-                docker {
-                    image 'maven:3.6-jdk-13'
-                    args '-v /root/.m2:/root/.m2'
-                }
-            }
+            agent docker
             steps {
                 sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip install'
                 sh 'pwd'
@@ -26,6 +26,7 @@ pipeline {
         }
 
         stage('Build and Publish Image') {
+            agent docker
             when {
                 branch 'master'  //only run these steps on the master branch
             }
