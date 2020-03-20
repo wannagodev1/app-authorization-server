@@ -20,16 +20,9 @@ pipeline {
             }
             steps {
                 sh 'mvn -Dmaven.test.skip -Dmaven.javadoc.skip install'
-                sh 'pwd'
-                sh 'ls -al'
-            }
-        }
-        stage('Docker Build') {
-            agent any
-            steps {
-                sh 'pwd'
-                sh 'ls -al'
                 sh "docker build -t ${env.dockerRegistry}/${IMAGE}:${VERSION} ."
+                sh 'pwd'
+                sh 'ls -al'
             }
         }
         stage('Docker Push') {
