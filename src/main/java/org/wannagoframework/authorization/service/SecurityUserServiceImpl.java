@@ -343,6 +343,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
           authentication = activeDirectoryLdapAuthenticationProvider.authenticate(
               new UsernamePasswordAuthenticationToken(_securityUser.get().getEmail(), password));
         } catch (BadCredentialsException e) {
+          logger().warn(loggerPrefix+"Bad credentials : "  +e.getMessage() );
         }
       }
       if (authentication == null || !authentication.isAuthenticated()) {
