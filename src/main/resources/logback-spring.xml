@@ -31,7 +31,7 @@
     </root>
   </springProfile>
 
-  <springProfile name="devlocal">
+  <springProfile name="local,eureka">
     <logger level="DEBUG" name="org.wannagoframework"/>
     <logger level="INFO" name="org.springframework.security"/>
 
