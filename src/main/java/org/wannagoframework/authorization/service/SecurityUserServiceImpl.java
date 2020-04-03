@@ -177,11 +177,12 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
       existingSecurityUser = securityUserRepository.findById(entity.getId()).get();
     }
 
-    if (existingSecurityUser == null || !existingSecurityUser.getPassword()
-        .equals(entity.getPassword())) {
-      entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+    if (StringUtils.isNotBlank(entity.getPassword())) {
+      if (existingSecurityUser == null || !existingSecurityUser.getPassword()
+          .equals(entity.getPassword())) {
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+      }
     }
-
     return securityUserRepository.save(entity);
   }
 
@@ -228,7 +229,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     user.setProvider(
         isEmailUsername ? AuthProviderEnum.LOCAL_EMAIL : AuthProviderEnum.LOCAL_MOBILE_NUMBER);
     user.setUserType(SecurityUserTypeEnum.EXTERNAL);
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    user.setPassword(StringUtils.isNotBlank(user.getPassword()) ? passwordEncoder.encode(user.getPassword()): null );
     user.getRoles().add(securityRoleRepository.getByNameIgnoreCase("EXTERNAL"));
     user.setDefaultLocale(new Locale(iso3Language));
     SecurityUser securityUser = securityUserRepository.save(user);
