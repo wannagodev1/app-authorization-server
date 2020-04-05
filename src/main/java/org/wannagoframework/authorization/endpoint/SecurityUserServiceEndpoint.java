@@ -120,7 +120,6 @@ public class SecurityUserServiceEndpoint extends BaseEndpoint {
     }
   }
 
-  @PreAuthorize("#oauth2.hasAnyScope('frontend','backend')")
   @PostMapping(value = "/getById")
   public ResponseEntity<ServiceResult> getById(@RequestBody GetByStrIdQuery query) {
     String loggerPrefix = getLoggerPrefix("getById");
