@@ -178,8 +178,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     }
 
     if (StringUtils.isNotBlank(entity.getPassword())) {
-      if (existingSecurityUser == null || !existingSecurityUser.getPassword()
-          .equals(entity.getPassword())) {
+      if (existingSecurityUser == null || existingSecurityUser.getPassword() == null || ( existingSecurityUser.getPassword() != null && !existingSecurityUser.getPassword().equals(entity.getPassword()))) {
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
       }
     }
