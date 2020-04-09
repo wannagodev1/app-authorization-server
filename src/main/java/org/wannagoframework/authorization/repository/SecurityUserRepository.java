@@ -34,7 +34,7 @@ public interface SecurityUserRepository extends MongoRepository<SecurityUser, St
 
   Boolean existsByEmail(String email);
 
-  Optional<SecurityUser> findByUsername(String username);
+  Optional<SecurityUser> findByUsernameIgnoreCase(String username);
 
   @Query("{'username':{'$regex':'?0','$options':'i'}, 'isActive': ?1}")
   Page<SecurityUser> findByUsernameLikeAndIsActive(String filter, Boolean showInactive,

@@ -201,7 +201,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    SecurityUser user = securityUserRepository.findByUsername(username)
+    SecurityUser user = securityUserRepository.findByUsernameIgnoreCase(username)
         .orElseThrow(() -> new UsernameNotFoundException("Username " + username + " not found"));
 
     org.wannagoframework.dto.domain.security.SecurityUser securityUserDTO = new org.wannagoframework.dto.domain.security.SecurityUser();
@@ -330,7 +330,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
     Authentication authentication = null;
     AuthResponse authResponse = new AuthResponse();
 
-    Optional<SecurityUser> _securityUser = securityUserRepository.findByUsername(username);
+    Optional<SecurityUser> _securityUser = securityUserRepository.findByUsernameIgnoreCase(username);
     if (!_securityUser.isPresent()) {
       logger().warn(loggerPrefix + "Username not found");
       authResponse.setStatus(AuthStatusEnum.BAD_CREDENTIALS);
@@ -519,7 +519,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
   @Transactional
   public String validatePasswordToken(String username, String passwordResetToken,
       String newPassword) {
-    Optional<SecurityUser> _securityUser = securityUserRepository.findByUsername(username);
+    Optional<SecurityUser> _securityUser = securityUserRepository.findByUsernameIgnoreCase(username);
 
     if (!_securityUser.isPresent()) {
       throw new UsernameNotFoundException(username);
@@ -599,7 +599,7 @@ public class SecurityUserServiceImpl implements SecurityUserService, HasLogger {
   }
 
   private void throwIfUsernameExists(String username) {
-    Optional<SecurityUser> existingUser = securityUserRepository.findByUsername(username);
+    Optional<SecurityUser> existingUser = securityUserRepository.findByUsernameIgnoreCase(username);
     existingUser.ifPresent((user) -> {
       throw new IllegalArgumentException(USER_EXISTS);
     });
