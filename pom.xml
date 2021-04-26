@@ -62,7 +62,7 @@
     <orika-core.version>1.5.4</orika-core.version>
 
     <jjwt.version>0.5.1</jjwt.version>
-    <commons-io.version>2.6</commons-io.version>
+    <commons-io.version>2.7</commons-io.version>
     <problem-spring-web.version>0.25.0</problem-spring-web.version>
 
     <logstash-gelf.version>1.13.0</logstash-gelf.version>
